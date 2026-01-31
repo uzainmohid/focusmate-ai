@@ -5,8 +5,12 @@ import sqlite3
 import json
 import math
 
+# app = Flask(__name__)
+# CORS(app)
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
+
 
 # Database setup
 def init_db():
@@ -511,3 +515,4 @@ def get_insights():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, port=5000)
+
