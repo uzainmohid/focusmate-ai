@@ -1,7 +1,6 @@
 import axios from "axios";
 
-// This should point to your deployed backend on Render
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = "https://focusmate-backend-a0ce.onrender.com";
 
 export const api = axios.create({
   baseURL: API_URL,

@@ -283,7 +283,8 @@
 // export default Dashboard
 
 import { useState, useEffect } from 'react'
-import { api } from './api'  // ✅ Use the API module now
+import { api } from '../api'
+  // ✅ Use the API module now
 
 function ProductivityRing({ score }) {
   const radius = 70
