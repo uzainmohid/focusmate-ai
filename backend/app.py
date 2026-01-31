@@ -2,14 +2,17 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime, timedelta
 import sqlite3
+import os
 import json
 import math
 
 # app = Flask(__name__)
 # CORS(app)
 
+# app = Flask(__name__)
+# CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "https://focuscoach-ai.netlify.app/"}})
 
 
 # Database setup
@@ -512,7 +515,11 @@ def get_insights():
     conn.close()
     return jsonify(insights)
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
+#     init_db()
+#     app.run(debug=True, port=5000)
+
+if __name__ == "__main__":
     init_db()
-    app.run(debug=True, port=5000)
+    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
