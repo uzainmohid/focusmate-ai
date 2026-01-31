@@ -6,13 +6,13 @@ import os
 import json
 import math
 
-# app = Flask(__name__)
-# CORS(app)
+app = Flask(__name__)
+CORS(app)
 
 # app = Flask(__name__)
 # CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "https://focuscoach-ai.netlify.app/"}})
+# app = Flask(__name__)
+# CORS(app, resources={r"/api/*": {"origins": "https://focuscoach-ai.netlify.app/"}})
 
 
 # Database setup
