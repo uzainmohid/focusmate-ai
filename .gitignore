@@ -36,3 +36,7 @@ build/
 .env
 .env.local
 .env.production
+
+backend/focusmate.db
+node_modules/
+dist/
