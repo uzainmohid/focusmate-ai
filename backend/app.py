@@ -391,92 +391,192 @@ def update_focus_session(session_id):
     
     return jsonify({"message": "Focus session updated"})
 
+# @app.route('/api/dashboard', methods=['GET'])
+# def get_dashboard():
+#     conn = sqlite3.connect('focusmate.db')
+#     c = conn.cursor()
+    
+#     today = datetime.now().date().isoformat()
+    
+#     # Tasks completed today
+#     c.execute('''SELECT COUNT(*) FROM tasks 
+#                  WHERE completed = 1 AND DATE(completed_at) = ?''', (today,))
+#     tasks_completed = c.fetchone()[0]
+    
+#     # Focus sessions today
+#     c.execute('''SELECT COUNT(*), SUM(duration) FROM focus_sessions 
+#                  WHERE completed = 1 AND DATE(start_time) = ?''', (today,))
+#     session_data = c.fetchone()
+#     focus_sessions = session_data[0]
+#     total_focus_minutes = session_data[1] or 0
+    
+#     # Total distractions today
+#     c.execute('''SELECT SUM(distractions) FROM focus_sessions 
+#                  WHERE DATE(start_time) = ?''', (today,))
+#     distractions = c.fetchone()[0] or 0
+    
+#     # Calculate productivity score
+#     productivity_score = ProductivityAnalytics.calculate_productivity_score(
+#         tasks_completed, focus_sessions, distractions, total_focus_minutes
+#     )
+    
+#     # Get productivity insight
+#     productivity_insight = ProductivityAnalytics.get_productivity_insights(
+#         productivity_score, tasks_completed, focus_sessions
+#     )
+    
+#     # Get top 3 priority tasks
+#     c.execute('''SELECT * FROM tasks WHERE completed = 0 
+#                  ORDER BY ai_priority_score DESC LIMIT 3''')
+#     top_tasks = []
+#     for row in c.fetchall():
+#         top_tasks.append({
+#             'id': row[0],
+#             'title': row[1],
+#             'urgency': row[2],
+#             'ai_priority_score': row[8]
+#         })
+    
+#     # Get all pending tasks for recommendations
+#     c.execute('SELECT * FROM tasks WHERE completed = 0')
+#     all_pending_tasks = []
+#     for row in c.fetchall():
+#         all_pending_tasks.append({
+#             'id': row[0],
+#             'title': row[1],
+#             'urgency': row[2],
+#             'effort': row[3],
+#             'deadline': row[4],
+#             'completed': bool(row[5]),
+#             'ai_priority_score': row[8]
+#         })
+    
+#     # Get AI recommendations
+#     recommendations = TaskPrioritizationEngine.get_smart_recommendations(all_pending_tasks)
+    
+#     # Predict current focus level
+#     time_of_day = datetime.now().strftime("%H:%M")
+#     c.execute('SELECT COUNT(*) FROM focus_sessions WHERE completed = 1')
+#     completed_sessions = c.fetchone()[0]
+#     c.execute('SELECT COUNT(*) FROM focus_sessions')
+#     total_sessions = c.fetchone()[0]
+#     completion_rate = completed_sessions / total_sessions if total_sessions > 0 else 0.5
+    
+#     current_focus = FocusPredictionEngine.predict_focus_level(time_of_day, 30, completion_rate)
+    
+#     conn.close()
+    
+#     return jsonify({
+#         'productivity_score': productivity_score,
+#         'productivity_insight': productivity_insight,
+#         'tasks_completed_today': tasks_completed,
+#         'focus_sessions_today': focus_sessions,
+#         'total_focus_minutes': total_focus_minutes,
+#         'distractions_today': distractions,
+#         'top_tasks': top_tasks,
+#         'current_focus_level': current_focus,
+#         'ai_recommendations': recommendations
+#     })
+
 @app.route('/api/dashboard', methods=['GET'])
 def get_dashboard():
-    conn = sqlite3.connect('focusmate.db')
-    c = conn.cursor()
-    
-    today = datetime.now().date().isoformat()
-    
-    # Tasks completed today
-    c.execute('''SELECT COUNT(*) FROM tasks 
-                 WHERE completed = 1 AND DATE(completed_at) = ?''', (today,))
-    tasks_completed = c.fetchone()[0]
-    
-    # Focus sessions today
-    c.execute('''SELECT COUNT(*), SUM(duration) FROM focus_sessions 
-                 WHERE completed = 1 AND DATE(start_time) = ?''', (today,))
-    session_data = c.fetchone()
-    focus_sessions = session_data[0]
-    total_focus_minutes = session_data[1] or 0
-    
-    # Total distractions today
-    c.execute('''SELECT SUM(distractions) FROM focus_sessions 
-                 WHERE DATE(start_time) = ?''', (today,))
-    distractions = c.fetchone()[0] or 0
-    
-    # Calculate productivity score
-    productivity_score = ProductivityAnalytics.calculate_productivity_score(
-        tasks_completed, focus_sessions, distractions, total_focus_minutes
-    )
-    
-    # Get productivity insight
-    productivity_insight = ProductivityAnalytics.get_productivity_insights(
-        productivity_score, tasks_completed, focus_sessions
-    )
-    
-    # Get top 3 priority tasks
-    c.execute('''SELECT * FROM tasks WHERE completed = 0 
-                 ORDER BY ai_priority_score DESC LIMIT 3''')
-    top_tasks = []
-    for row in c.fetchall():
-        top_tasks.append({
-            'id': row[0],
-            'title': row[1],
-            'urgency': row[2],
-            'ai_priority_score': row[8]
+    try:
+        conn = sqlite3.connect('focusmate.db')
+        c = conn.cursor()
+        
+        today = datetime.now().date().isoformat()
+        
+        # Tasks completed today
+        c.execute('''SELECT COUNT(*) FROM tasks 
+                     WHERE completed = 1 AND DATE(completed_at) = ?''', (today,))
+        row = c.fetchone()
+        tasks_completed = row[0] if row else 0
+        
+        # Focus sessions today
+        c.execute('''SELECT COUNT(*), SUM(duration) FROM focus_sessions 
+                     WHERE completed = 1 AND DATE(start_time) = ?''', (today,))
+        session_data = c.fetchone()
+        focus_sessions = session_data[0] if session_data and session_data[0] else 0
+        total_focus_minutes = session_data[1] if session_data and session_data[1] else 0
+        
+        # Total distractions today
+        c.execute('''SELECT SUM(distractions) FROM focus_sessions 
+                     WHERE DATE(start_time) = ?''', (today,))
+        row = c.fetchone()
+        distractions = row[0] if row and row[0] else 0
+        
+        # Productivity score
+        productivity_score = ProductivityAnalytics.calculate_productivity_score(
+            tasks_completed, focus_sessions, distractions, total_focus_minutes
+        )
+        
+        productivity_insight = ProductivityAnalytics.get_productivity_insights(
+            productivity_score, tasks_completed, focus_sessions
+        )
+        
+        # Top 3 priority tasks
+        c.execute('''SELECT * FROM tasks WHERE completed = 0 
+                     ORDER BY ai_priority_score DESC LIMIT 3''')
+        top_tasks = []
+        for row in c.fetchall() or []:
+            top_tasks.append({
+                'id': row[0],
+                'title': row[1],
+                'urgency': row[2],
+                'ai_priority_score': row[8]
+            })
+        
+        # Pending tasks for recommendations
+        c.execute('SELECT * FROM tasks WHERE completed = 0')
+        all_pending_tasks = []
+        for row in c.fetchall() or []:
+            all_pending_tasks.append({
+                'id': row[0],
+                'title': row[1],
+                'urgency': row[2],
+                'effort': row[3],
+                'deadline': row[4],
+                'completed': bool(row[5]),
+                'ai_priority_score': row[8]
+            })
+        
+        recommendations = TaskPrioritizationEngine.get_smart_recommendations(all_pending_tasks)
+        
+        # Current focus prediction
+        time_of_day = datetime.now().strftime("%H:%M")
+        
+        c.execute('SELECT COUNT(*) FROM focus_sessions WHERE completed = 1')
+        row1 = c.fetchone()
+        completed_sessions = row1[0] if row1 else 0
+        
+        c.execute('SELECT COUNT(*) FROM focus_sessions')
+        row2 = c.fetchone()
+        total_sessions = row2[0] if row2 else 0
+        
+        completion_rate = completed_sessions / total_sessions if total_sessions > 0 else 0.5
+        
+        current_focus = FocusPredictionEngine.predict_focus_level(
+            time_of_day, 30, completion_rate
+        )
+        
+        conn.close()
+        
+        return jsonify({
+            'productivity_score': productivity_score,
+            'productivity_insight': productivity_insight,
+            'tasks_completed_today': tasks_completed,
+            'focus_sessions_today': focus_sessions,
+            'total_focus_minutes': total_focus_minutes,
+            'distractions_today': distractions,
+            'top_tasks': top_tasks,
+            'current_focus_level': current_focus,
+            'ai_recommendations': recommendations
         })
     
-    # Get all pending tasks for recommendations
-    c.execute('SELECT * FROM tasks WHERE completed = 0')
-    all_pending_tasks = []
-    for row in c.fetchall():
-        all_pending_tasks.append({
-            'id': row[0],
-            'title': row[1],
-            'urgency': row[2],
-            'effort': row[3],
-            'deadline': row[4],
-            'completed': bool(row[5]),
-            'ai_priority_score': row[8]
-        })
-    
-    # Get AI recommendations
-    recommendations = TaskPrioritizationEngine.get_smart_recommendations(all_pending_tasks)
-    
-    # Predict current focus level
-    time_of_day = datetime.now().strftime("%H:%M")
-    c.execute('SELECT COUNT(*) FROM focus_sessions WHERE completed = 1')
-    completed_sessions = c.fetchone()[0]
-    c.execute('SELECT COUNT(*) FROM focus_sessions')
-    total_sessions = c.fetchone()[0]
-    completion_rate = completed_sessions / total_sessions if total_sessions > 0 else 0.5
-    
-    current_focus = FocusPredictionEngine.predict_focus_level(time_of_day, 30, completion_rate)
-    
-    conn.close()
-    
-    return jsonify({
-        'productivity_score': productivity_score,
-        'productivity_insight': productivity_insight,
-        'tasks_completed_today': tasks_completed,
-        'focus_sessions_today': focus_sessions,
-        'total_focus_minutes': total_focus_minutes,
-        'distractions_today': distractions,
-        'top_tasks': top_tasks,
-        'current_focus_level': current_focus,
-        'ai_recommendations': recommendations
-    })
+    except Exception as e:
+        print("Dashboard error:", str(e))
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/insights', methods=['GET'])
 def get_insights():
