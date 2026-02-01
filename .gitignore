@@ -6,6 +6,9 @@ __pycache__/
 .Python
 venv/
 env/
+.env
+
+# SQLite databases
 *.db
 
 # Node
@@ -15,7 +18,6 @@ yarn-debug.log*
 yarn-error.log*
 dist/
 dist-ssr/
-*.local
 
 # IDEs
 .vscode/
@@ -28,15 +30,6 @@ dist-ssr/
 .DS_Store
 Thumbs.db
 
-# Build
+# Build / cache
 build/
 .cache/
-
-# Environment
-.env
-.env.local
-.env.production
-
-backend/focusmate.db
-node_modules/
-dist/
